@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Coordinates Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        #map { height: 400px; margin-bottom: 20px; }
+        body { font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+
+<h1>Random Coordinates and Localities</h1>
+<div id="map"></div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    
+    var map = L.map('map').setView([39.8283, -98.5795], 4);
+
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+
+    function getRandomInRange(from, to, fixed) {
+        return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+    }
+
+    
+    let coordinates = [
+        { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) },
+        { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) },
+        { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) }
+    ];
+
+    
+    coordinates.forEach((coord, index) => {
+       
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coord.lat}&longitude=${coord.lng}&localityLanguage=en`)
+        .then(response => response.json())
+        .then(data => {
+            var locality = data.locality || "Unknown locality";
+            
+            
+            var marker = L.marker([coord.lat, coord.lng]).addTo(map);
+            marker.bindPopup(`Marker ${index + 1}: (${coord.lat}, ${coord.lng})<br>Locality: ${locality}`).openPopup();
+
+           
+            let localityInfo = document.createElement('p');
+            localityInfo.innerText = `Marker ${index + 1}: Coordinates (${coord.lat}, ${coord.lng}) - Locality: ${locality}`;
+            document.body.appendChild(localityInfo);
+        })
+        .catch(error => console.log('Error:', error));
+    });
+</script>
+
+</body>
+</html>
